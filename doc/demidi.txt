@@ -1,0 +1,25 @@
+Name(7)
+=======
+
+
+NAME
+----
+demidi - Decentralized MIDI over Zyre
+
+
+SYNOPSIS
+--------
+----
+#include <demidi.h>
+
+cc ['flags'] 'files' -ldemidi ['libraries']
+----
+
+
+DESCRIPTION
+-----------
+
+Classes
+~~~~~~~
+
+Something.
