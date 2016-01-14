@@ -1,0 +1,10 @@
+<project name = "demidi" 
+         description = "Decentralized MIDI over Zyre" 
+         script = "zproject.gsl"
+    >
+    <include filename = "license.xml" />
+    <use project = "zyre" />
+    <use project = "asound" optional = "1" implied = "1" />
+    <main name = "midicast" />
+    <main name = "midigrab" />
+</project>
