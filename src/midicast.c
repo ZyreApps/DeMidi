@@ -3,7 +3,7 @@
 
     Copyright (c) the Contributors as noted in the AUTHORS file.
 
-    This file is part of demidi, a distributed MIDI project.
+    This file is part of DeMidi, a distributed MIDI project.
     https://github.com/zyreapps/demidi
 
     This Source Code Form is subject to the terms of the Mozilla Public
