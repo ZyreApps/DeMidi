@@ -25,15 +25,20 @@ int main (int argc, char *argv [])
         puts (" -h, --help: this help");
         puts (" -v, --verbose: trace events as they happen");
         puts (" -p, --port: specify port name, e.g. '-p hw:1,0,0'");
+        puts (" -c, --channel: specify channel 0-15, e.g. '-c 2'");
         puts (" -i, --interface: specify WiFi interface, e.g. '-i wlan0'");
         return 0;
     }
     char *midi_port_name = "hw:1,0,0";
     char *wifi_interface = NULL;
+    int midi_channel = 0;
     bool verbose = false;
     while (argn < argc) {
         if (streq (argv [argn], "-p") || streq (argv [argn], "--port"))
             midi_port_name = argv [++argn];
+        else
+        if (streq (argv [argn], "-c") || streq (argv [argn], "--channel"))
+            midi_channel = atoi (argv [++argn]) & 0x0F;
         else
         if (streq (argv [argn], "-i") || streq (argv [argn], "--interface"))
             wifi_interface = argv [++argn];
@@ -73,6 +78,17 @@ int main (int argc, char *argv [])
             zsys_error ("cannot read MIDI data: %s", snd_strerror (rc));
             break;
         }
+        //  Set channel if it's a voice command
+        byte voice_cmd = buffer [0] & 0xF0;
+        if (voice_cmd == 0x80
+        ||  voice_cmd == 0x90
+        ||  voice_cmd == 0xA0
+        ||  voice_cmd == 0xB0
+        ||  voice_cmd == 0xC0
+        ||  voice_cmd == 0xD0
+        ||  voice_cmd == 0xE0)
+            buffer [0] += midi_channel;
+
         //  Broadcast the MIDI event
         zmsg_t *msg = zmsg_new ();
         zmsg_addmem (msg, buffer, rc);
