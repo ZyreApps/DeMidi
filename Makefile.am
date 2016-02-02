@@ -6,7 +6,7 @@
 ACLOCAL_AMFLAGS = -I config
 
 AM_CFLAGS = \
-	-Werror=format-security
+    -Werror=format-security
 
 
 AM_CPPFLAGS = \
@@ -29,10 +29,10 @@ noinst_LTLIBRARIES =
 TESTS =
 
 EXTRA_DIST = \
-    src/demidi_classes.h \
     LICENSE \
     README.md \
-    version.sh
+    CONTRIBUTING.md \
+    src/demidi_classes.h
 
 include $(srcdir)/src/Makemodule.am
 

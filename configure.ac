@@ -7,11 +7,7 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
 #
-# The version number is extracted from include/demidi.h using
-# the version.sh script. Hence, it should be updated there.
-# The version in git should reflect the *next* version planned.
-#
-AC_INIT([demidi],[m4_esyscmd([./version.sh demidi.h])],[email@hostname.com])
+AC_INIT([demidi],[1.0.0],[email@hostname.com])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -40,7 +36,7 @@ AC_SUBST(PACKAGE_VERSION)
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
 # libdemidi -version-info
-LTVER="0:0:0"
+LTVER="1:0:0"
 AC_SUBST(LTVER)
 
 # Capture c flags
@@ -67,6 +63,9 @@ if test "x${DEMIDI_GCOV}" == "xyes"; then
     if test "x${DEMIDI_ORIG_CFLAGS}" != "xnone"; then
         CFLAGS="${CFLAGS} ${DEMIDI_ORIG_CFLAGS}"
     fi
+    AM_CONDITIONAL(WITH_GCOV, true)
+else
+    AM_CONDITIONAL(WITH_GCOV, false)
 fi
 
 PREVIOUS_CFLAGS="${CFLAGS}"
@@ -309,15 +308,20 @@ LIBS="${PREVIOUS_LIBS}"
 demidi_on_mingw32="no"
 demidi_on_cygwin="no"
 demidi_on_android="no"
+demidi_on_linux="no"
+demidi_on_gnu="no"
 
 # Host specific checks
 AC_CANONICAL_HOST
 
-# Allow user to disable doc build
-AC_ARG_WITH([documentation], [AS_HELP_STRING([--without-documentation],
-    [disable documentation build even if asciidoc and xmlto are present [default=no]])])
+# Man pages are built/installed if asciidoc and xmlto are present
+#   --with-docs=no overrides this
+AC_ARG_WITH([docs],
+    AS_HELP_STRING([--with-docs],
+        [Build and install man pages [default=yes]]),
+    [with_docs=$withval])
 
-if test "x$with_documentation" = "xno"; then
+if test "x$with_docs" = "xno"; then
     demidi_build_doc="no"
     demidi_install_man="no"
 else
@@ -352,6 +356,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE -DLINUX $CPPFLAGS"
         AC_DEFINE(DEMIDI_HAVE_LINUX, 1, [Have Linux OS])
+        demidi_on_linux="yes"
 
         case "${host_os}" in
             *android*)
@@ -410,6 +415,14 @@ case "${host_os}" in
         AC_DEFINE(DEMIDI_HAVE_CYGWIN, 1, [Have Cygwin])
         demidi_on_cygwin="yes"
         ;;
+    gnu*)
+        # Define on GNU/Hurd to enable all library features
+        if test "x$GXX" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
+        AC_DEFINE(DEMIDI_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        demidi_on_gnu="yes"
+        ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
@@ -448,28 +461,30 @@ AM_CONDITIONAL(ENABLE_SHARED, test "x$enable_shared" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$demidi_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$demidi_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$demidi_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$demidi_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$demidi_on_gnu" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$demidi_install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$demidi_build_doc" = "xyes")
 
 # Check for midicast intent
-AC_ARG_WITH([midicast],
-    AS_HELP_STRING([--with-midicast],
-        [Compile and install the midicast program [default=yes].]),
-    [with_midicast=$withval],
-    [with_midicast=yes])
+AC_ARG_ENABLE([midicast],
+    AS_HELP_STRING([--enable-midicast],
+        [Compile and install 'midicast' [default=yes].]),
+    [enable_midicast=$enableval],
+    [enable_midicast=yes])
 
-AM_CONDITIONAL([WITH_MIDICAST], [test x$with_midicast != xno])
-AM_COND_IF([WITH_MIDICAST], [AC_MSG_NOTICE([WITH_MIDICAST defined])])
+AM_CONDITIONAL([ENABLE_MIDICAST], [test x$enable_midicast != xno])
+AM_COND_IF([ENABLE_MIDICAST], [AC_MSG_NOTICE([ENABLE_MIDICAST defined])])
 
 # Check for midigrab intent
-AC_ARG_WITH([midigrab],
-    AS_HELP_STRING([--with-midigrab],
-        [Compile and install the midigrab program [default=yes].]),
-    [with_midigrab=$withval],
-    [with_midigrab=yes])
+AC_ARG_ENABLE([midigrab],
+    AS_HELP_STRING([--enable-midigrab],
+        [Compile and install 'midigrab' [default=yes].]),
+    [enable_midigrab=$enableval],
+    [enable_midigrab=yes])
 
-AM_CONDITIONAL([WITH_MIDIGRAB], [test x$with_midigrab != xno])
-AM_COND_IF([WITH_MIDIGRAB], [AC_MSG_NOTICE([WITH_MIDIGRAB defined])])
+AM_CONDITIONAL([ENABLE_MIDIGRAB], [test x$enable_midigrab != xno])
+AM_COND_IF([ENABLE_MIDIGRAB], [AC_MSG_NOTICE([ENABLE_MIDIGRAB defined])])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
@@ -480,7 +495,6 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
     [Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
     [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
-
 
 
 # enable specific system integration features
@@ -496,6 +510,32 @@ AM_COND_IF([WITH_SYSTEMD],
     [PKG_CHECK_MODULES([SYSTEMD], [systemd >= 200], [],
         [AC_MSG_ERROR([Cannot find required package for systemd. Note, pkg-config is required due to specified version >= 200])])],
     [])
+
+if test "x$cross_compiling" = "xyes"; then
+    #   Enable draft by default when cross-compiling
+    gitmaster=yes
+else
+    # enable draft API by default if we're in a git repository
+    # else disable it by default; then allow --enable-drafts=yes/no override
+    AC_CHECK_FILE($srcdir/.git, [gitmaster=yes], [gitmaster=no])
+fi
+
+AC_ARG_ENABLE([drafts],
+    AS_HELP_STRING([--enable-drafts],
+        [Build and install draft classes and methods [default=yes.]]),
+    [enable_drafts=$withval],
+    [enable_drafts=$gitmaster])
+
+AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
+
+if test "x$enable_drafts" = "xyes"; then
+    AC_MSG_NOTICE([Building stable and legacy API + draft API])
+    AC_DEFINE(DEMIDI_BUILD_DRAFT_API, 1, [Provide draft classes and methods.])
+    AC_SUBST(pkg_config_defines, "-DDEMIDI_BUILD_DRAFT_API=1")
+else
+    AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
+    AC_SUBST(pkg_config_defines, "")
+fi
 
 # Specify output files
 AC_CONFIG_FILES([Makefile])
