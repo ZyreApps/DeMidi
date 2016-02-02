@@ -7,7 +7,7 @@ if (NOT MSVC)
     include(FindPkgConfig)
     pkg_check_modules(PC_ZYRE "libzyre")
     if (NOT PC_ZYRE_FOUND)
-        pkg_check_modules(PC_ZYRE "zyre")
+        pkg_check_modules(PC_ZYRE "libzyre")
     endif (NOT PC_ZYRE_FOUND)
     if (PC_ZYRE_FOUND)
         # some libraries install the headers is a subdirectory of the include dir
