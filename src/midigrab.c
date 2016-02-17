@@ -65,10 +65,10 @@ int main (int argc, char *argv [])
             break;
         }
         if (zyre_event_type (event) == ZYRE_EVENT_JOIN)
-            zsys_info ("[%s] player joined", zyre_event_name (event));
+            zsys_info ("[%s] player joined", zyre_event_peer_name (event));
         else
         if (zyre_event_type (event) == ZYRE_EVENT_LEAVE)
-            zsys_info ("[%s] player left", zyre_event_name (event));
+            zsys_info ("[%s] player left", zyre_event_peer_name (event));
         else
         if (zyre_event_type (event) == ZYRE_EVENT_SHOUT) {
             if (streq (zyre_event_group (event), "MIDI")) {

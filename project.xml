@@ -3,9 +3,9 @@
          script = "zproject.gsl"
     >
     <include filename = "license.xml" />
-    <version major = "1" minor = "0" />
+    <version major = "1" minor = "1" />
     <use project = "zyre" />
-    <use project = "asound" optional = "1" implied = "1" />
+    <use project = "asound" />
     <main name = "midicast" />
     <main name = "midigrab" />
 </project>
