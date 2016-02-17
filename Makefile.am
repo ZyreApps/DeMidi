@@ -10,14 +10,14 @@ AM_CFLAGS = \
 
 
 AM_CPPFLAGS = \
-    ${libsodium_CFLAGS} \
     ${libzmq_CFLAGS} \
+    ${uuid_CFLAGS} \
     ${czmq_CFLAGS} \
     ${zyre_CFLAGS} \
     ${asound_CFLAGS} \
     -I$(srcdir)/include
 
-project_libs = ${libsodium_LIBS} ${libzmq_LIBS} ${czmq_LIBS} ${zyre_LIBS} ${asound_LIBS}
+project_libs = ${libzmq_LIBS} ${uuid_LIBS} ${czmq_LIBS} ${zyre_LIBS} ${asound_LIBS}
 
 SUBDIRS = 
 DIST_SUBDIRS = 

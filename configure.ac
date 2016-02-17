@@ -72,53 +72,6 @@ PREVIOUS_CFLAGS="${CFLAGS}"
 PREVIOUS_LIBS="${LIBS}"
 
 
-was_libsodium_check_lib_detected=no
-
-PKG_CHECK_MODULES([libsodium], [libsodium >= 0.0.0],
-    [
-        AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
-    ],
-    [
-        AC_ARG_WITH([libsodium],
-            [
-                AS_HELP_STRING([--with-libsodium],
-                [Specify libsodium prefix])
-            ],
-            [search_libsodium="yes"],
-            [])
-
-        libsodium_synthetic_cflags=""
-        libsodium_synthetic_libs="-lsodium"
-
-        if test "x$search_libsodium" = "xyes"; then
-            if test -r "${with_libsodium}/include/sodium.h"; then
-                libsodium_synthetic_cflags="-I${with_libsodium}/include"
-                libsodium_synthetic_libs="-L${with_libsodium}/lib -lsodium"
-            else
-                AC_MSG_ERROR([${with_libsodium}/include/sodium.h not found. Please check libsodium prefix])
-            fi
-        fi
-
-        AC_CHECK_LIB([libsodium], [sodium_init],
-            [
-                CFLAGS="${libsodium_synthetic_cflags} ${CFLAGS}"
-                LDFLAGS="${libsodium_synthetic_libs} ${LDFLAGS}"
-                LIBS="${libsodium_synthetic_libs} ${LIBS}"
-
-                AC_SUBST([libsodium_CFLAGS],[${libsodium_synthetic_cflags}])
-                AC_SUBST([libsodium_LIBS],[${libsodium_synthetic_libs}])
-                was_libsodium_check_lib_detected=yes
-                AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
-            ],
-            [])
-    ])
-
-if test "x$was_libsodium_check_lib_detected" = "xno"; then
-    CFLAGS="${libsodium_CFLAGS} ${CFLAGS}"
-    LIBS="${libsodium_LIBS} ${LIBS}"
-fi
-
-
 was_libzmq_check_lib_detected=no
 
 PKG_CHECK_MODULES([libzmq], [libzmq >= 0.0.0],
@@ -163,6 +116,51 @@ if test "x$was_libzmq_check_lib_detected" = "xno"; then
     LIBS="${libzmq_LIBS} ${LIBS}"
 fi
 
+was_uuid_check_lib_detected=no
+
+PKG_CHECK_MODULES([uuid], [uuid >= 0.0.0],
+    [
+        AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used.])
+    ],
+    [
+        AC_ARG_WITH([uuid],
+            [
+                AS_HELP_STRING([--with-uuid],
+                [Specify uuid prefix])
+            ],
+            [search_uuid="yes"],
+            [])
+
+        uuid_synthetic_cflags=""
+        uuid_synthetic_libs="-luuid"
+
+        if test "x$search_uuid" = "xyes"; then
+            if test -r "${with_uuid}/include/uuid/uuid.h"; then
+                uuid_synthetic_cflags="-I${with_uuid}/include"
+                uuid_synthetic_libs="-L${with_uuid}/lib -luuid"
+            else
+                AC_MSG_ERROR([${with_uuid}/include/uuid/uuid.h not found. Please check uuid prefix])
+            fi
+        fi
+
+        AC_CHECK_LIB([uuid], [uuid_generate],
+            [
+                CFLAGS="${uuid_synthetic_cflags} ${CFLAGS}"
+                LDFLAGS="${uuid_synthetic_libs} ${LDFLAGS}"
+                LIBS="${uuid_synthetic_libs} ${LIBS}"
+
+                AC_SUBST([uuid_CFLAGS],[${uuid_synthetic_cflags}])
+                AC_SUBST([uuid_LIBS],[${uuid_synthetic_libs}])
+                was_uuid_check_lib_detected=yes
+                AC_DEFINE(HAVE_UUID, 1, [The uuid library is to be used.])
+            ],
+            [])
+    ])
+
+if test "x$was_uuid_check_lib_detected" = "xno"; then
+    CFLAGS="${uuid_CFLAGS} ${CFLAGS}"
+    LIBS="${uuid_LIBS} ${LIBS}"
+fi
 
 was_czmq_check_lib_detected=no
 
@@ -208,7 +206,6 @@ if test "x$was_czmq_check_lib_detected" = "xno"; then
     LIBS="${czmq_LIBS} ${LIBS}"
 fi
 
-
 was_zyre_check_lib_detected=no
 
 PKG_CHECK_MODULES([zyre], [libzyre >= 0.0.0],
@@ -253,12 +250,10 @@ if test "x$was_zyre_check_lib_detected" = "xno"; then
     LIBS="${zyre_LIBS} ${LIBS}"
 fi
 
-
 was_asound_check_lib_detected=no
 
 PKG_CHECK_MODULES([asound], [asound >= 0.0.0],
     [
-        AC_DEFINE(HAVE_ASOUND, 1, [The asound library is to be used.])
     ],
     [
         AC_ARG_WITH([asound],
@@ -290,16 +285,14 @@ PKG_CHECK_MODULES([asound], [asound >= 0.0.0],
                 AC_SUBST([asound_CFLAGS],[${asound_synthetic_cflags}])
                 AC_SUBST([asound_LIBS],[${asound_synthetic_libs}])
                 was_asound_check_lib_detected=yes
-                AC_DEFINE(HAVE_ASOUND, 1, [The asound library is to be used.])
             ],
-            [])
+            [AC_MSG_ERROR([cannot link with -lasound, install asound.])])
     ])
 
 if test "x$was_asound_check_lib_detected" = "xno"; then
     CFLAGS="${asound_CFLAGS} ${CFLAGS}"
     LIBS="${asound_LIBS} ${LIBS}"
 fi
-
 
 CFLAGS="${PREVIOUS_CFLAGS}"
 LIBS="${PREVIOUS_LIBS}"
@@ -499,16 +492,16 @@ AC_SUBST([pkgconfigdir])
 
 # enable specific system integration features
 AC_ARG_WITH([systemd],
-    AS_HELP_STRING([--with-systemd],
-    [Build and install with systemd integration [default=no].]),
-    [with_systemd=$withval],
-    [with_systemd=no])
+    AS_HELP_STRING([--with-systemd-units],
+    [Build and install with systemd units integration [default=no].]),
+    [with_systemd_units=$withval],
+    [with_systemd_units=no])
 
-AM_CONDITIONAL([WITH_SYSTEMD], [test x$with_systemd != xno])
+AM_CONDITIONAL([WITH_SYSTEMD_UNITS], [test x$with_systemd_units != xno])
 
-AM_COND_IF([WITH_SYSTEMD],
-    [PKG_CHECK_MODULES([SYSTEMD], [systemd >= 200], [],
-        [AC_MSG_ERROR([Cannot find required package for systemd. Note, pkg-config is required due to specified version >= 200])])],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
+    [AC_DEFINE(WITH_SYSTEMD_UNITS, 1, [systemd units are going to be installed])
+    AC_SUBST(WITH_SYSTEMD_UNITS)],
     [])
 
 if test "x$cross_compiling" = "xyes"; then
@@ -523,7 +516,7 @@ fi
 AC_ARG_ENABLE([drafts],
     AS_HELP_STRING([--enable-drafts],
         [Build and install draft classes and methods [default=yes.]]),
-    [enable_drafts=$withval],
+    [enable_drafts=$enableval],
     [enable_drafts=$gitmaster])
 
 AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
@@ -540,7 +533,7 @@ fi
 # Specify output files
 AC_CONFIG_FILES([Makefile])
 
-AM_COND_IF([WITH_SYSTEMD],
+AM_COND_IF([WITH_SYSTEMD_UNITS],
     [AC_CONFIG_FILES([
     ])],
     [])

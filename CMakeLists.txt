@@ -79,17 +79,6 @@ list(APPEND CMAKE_MODULE_PATH "${SOURCE_DIR}")
 set(OPTIONAL_LIBRARIES)
 
 ########################################################################
-# LIBSODIUM dependency
-########################################################################
-find_package(libsodium)
-IF (LIBSODIUM_FOUND)
-    include_directories(${LIBSODIUM_INCLUDE_DIRS})
-    list(APPEND MORE_LIBRARIES ${LIBSODIUM_LIBRARIES})
-    add_definitions(-DHAVE_LIBSODIUM)
-    list(APPEND OPTIONAL_LIBRARIES ${LIBSODIUM_LIBRARIES})
-ENDIF (LIBSODIUM_FOUND)
-
-########################################################################
 # LIBZMQ dependency
 ########################################################################
 find_package(libzmq REQUIRED)
@@ -99,6 +88,17 @@ IF (LIBZMQ_FOUND)
 ELSE (LIBZMQ_FOUND)
     message( FATAL_ERROR "libzmq not found." )
 ENDIF (LIBZMQ_FOUND)
+
+########################################################################
+# UUID dependency
+########################################################################
+find_package(uuid)
+IF (UUID_FOUND)
+    include_directories(${UUID_INCLUDE_DIRS})
+    list(APPEND MORE_LIBRARIES ${UUID_LIBRARIES})
+    add_definitions(-DHAVE_UUID)
+    list(APPEND OPTIONAL_LIBRARIES ${UUID_LIBRARIES})
+ENDIF (UUID_FOUND)
 
 ########################################################################
 # CZMQ dependency
@@ -125,12 +125,12 @@ ENDIF (ZYRE_FOUND)
 ########################################################################
 # ASOUND dependency
 ########################################################################
-find_package(asound)
+find_package(asound REQUIRED)
 IF (ASOUND_FOUND)
     include_directories(${ASOUND_INCLUDE_DIRS})
     list(APPEND MORE_LIBRARIES ${ASOUND_LIBRARIES})
-    add_definitions(-DHAVE_ASOUND)
-    list(APPEND OPTIONAL_LIBRARIES ${ASOUND_LIBRARIES})
+ELSE (ASOUND_FOUND)
+    message( FATAL_ERROR "asound not found." )
 ENDIF (ASOUND_FOUND)
 
 ########################################################################
@@ -154,6 +154,7 @@ target_link_libraries(
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${ZYRE_LIBRARIES}
+    ${ASOUND_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
 set_target_properties(
@@ -169,6 +170,7 @@ target_link_libraries(
     ${LIBZMQ_LIBRARIES}
     ${CZMQ_LIBRARIES}
     ${ZYRE_LIBRARIES}
+    ${ASOUND_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
 set_target_properties(
