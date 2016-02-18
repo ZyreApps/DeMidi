@@ -46,5 +46,6 @@ RUN make
 RUN sudo make install
 RUN sudo ldconfig
 
-RUN which midigrab || echo "midigrab not found" && exit 2
-RUN which midiplay || echo "midiplay not found" && exit 2
+# check that midigrab and midicast are installed
+RUN type midigrab
+RUN type midicast
