@@ -12,13 +12,29 @@ This project uses the [C4.1 (Collective Code Construction Contract)](http://rfc.
 
 This project uses the [CLASS (C Language Style for Scalabilty)](http://rfc.zeromq.org/spec:21) guide for code style.
 
-## Usage
+## Dependencies
 
-Build using either of:
+Before compiling, you will need to install the alsa dev libraries, on ubuntu it is "libasound2-dev".
+
+## Installation
+
+Build using either autotools:
 
 ```
-./autogen.sh && configure && make
-cmake . && make
+$ ./autogen.sh
+$ ./configure
+$ make
+$ make install
+```
+
+Or With cmake:
+
+```
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+$ make install
 ```
 
 Currently provides two tools:
