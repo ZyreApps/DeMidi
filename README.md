@@ -71,3 +71,7 @@ amidi -l
 cat /proc/asound/cards
 cat /proc/asound/devices
 ```
+
+## Links
+
+* OpenWRT package: https://github.com/zoobab/openwrt-zmq-packages/blob/master/demidi/Makefile
